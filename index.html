@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مدير حملات واتساب الذكي</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1116; --surface: #131c24; --card: #1a2631;
+      --green: #25d366; --green-dark: #128c7e; --gold: #f59e0b;
+      --blue: #3b82f6; --red: #ef4444; --text: #f8fafc; --muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08); --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Cairo', sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 14px; padding-bottom: 50px; max-width: 720px; margin: auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    header h1 { font-size: 1.2rem; font-weight: 900; color: var(--green); }
+    header span { font-size: 0.72rem; color: var(--muted); display: block; }
+    .btn-reset { background: rgba(239, 68, 68, 0.14); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 6px; text-align: center; }
+    .stat-num { font-size: 1.25rem; font-weight: 900; }
+    .stat-lbl { font-size: 0.68rem; color: var(--muted); font-weight: 700; }
+
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .tab-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); padding: 10px; border-radius: 10px; font-size: 0.82rem; font-weight: 800; cursor: pointer; }
+    .tab-btn.active { background: var(--green); color: #08120c; border-color: transparent; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; margin-bottom: 14px; }
+    .card h2 { font-size: 0.95rem; font-weight: 800; margin-bottom: 10px; color: #fff; }
+    label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 5px; font-weight: 700; }
+    input, textarea, select { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 0.86rem; outline: none; margin-bottom: 10px; }
+    input:focus, textarea:focus { border-color: var(--green); }
+
+    .btn { width: 100%; background: var(--green); color: #06140b; border: none; padding: 12px; border-radius: 10px; font-size: 0.92rem; font-weight: 900; cursor: pointer; }
+    .btn:active { transform: scale(0.98); }
+    .btn-secondary { background: var(--card); color: #fff; border: 1px solid var(--border); margin-top: 8px; }
+
+    .send-hero { background: linear-gradient(145deg, #16242f 0%, #0f1820 100%); border: 1px solid rgba(37, 211, 102, 0.4); border-radius: var(--radius); padding: 18px 15px; text-align: center; margin-bottom: 14px; }
+    .hero-name { font-size: 1.2rem; font-weight: 900; color: #fff; }
+    .hero-phone { font-size: 0.9rem; color: var(--green); direction: ltr; margin: 4px 0 10px; font-weight: 700; }
+    .hero-msg-preview { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 0.82rem; color: #cbd5e1; text-align: right; white-space: pre-wrap; margin-bottom: 12px; line-height: 1.5; }
+    .badge-var { display: inline-block; background: rgba(245, 158, 11, 0.16); color: var(--gold); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; margin-bottom: 8px; }
+
+    .filter-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 8px; scrollbar-width: none; }
+    .filter-chip { flex: 0 0 auto; background: var(--card); border: 1px solid var(--border); color: var(--muted); padding: 5px 12px; border-radius: 20px; font-size: 0.74rem; font-weight: 800; cursor: pointer; }
+    .filter-chip.active { background: var(--green); color: #06140b; border-color: transparent; }
+
+    .lead-row { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+    .lead-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .lead-name { font-weight: 800; font-size: 0.88rem; }
+    .lead-phone { font-size: 0.76rem; color: var(--muted); direction: ltr; }
+    .status-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+    .st-btn { padding: 5px 4px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--muted); font-size: 0.68rem; font-weight: 800; cursor: pointer; }
+    .st-btn.active-sent { background: rgba(59,130,246,0.2); color: #60a5fa; border-color: #3b82f6; }
+    .st-btn.active-interested { background: rgba(37,211,102,0.2); color: var(--green); border-color: var(--green); }
+    .st-btn.active-followup { background: rgba(245,158,11,0.2); color: var(--gold); border-color: var(--gold); }
+    .st-btn.active-not { background: rgba(239,68,68,0.2); color: var(--red); border-color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>مدير حملات واتساب</h1>
+      <span>إرسال تدريجي آمن + 3 نسخ للرسالة + متابعة الزبائن</span>
+    </div>
+    <button class="btn-reset" onclick="resetCampaign()">حملة جديدة</button>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-num" id="stTotal" style="color:#fff;">0</div><div class="stat-lbl">الإجمالي</div></div>
+    <div class="stat-box"><div class="stat-num" id="stToday" style="color:var(--blue);">0/50</div><div class="stat-lbl">إرسال اليوم</div></div>
+    <div class="stat-box"><div class="stat-num" id="stInterested" style="color:var(--green);">0</div><div class="stat-lbl">مهتم</div></div>
+    <div class="stat-box"><div class="stat-num" id="stFollowup" style="color:var(--gold);">0</div><div class="stat-lbl">للمتابعة</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('send', this)">الإرسال السريع</button>
+    <button class="tab-btn" onclick="switchTab('leads', this)">الزبائن والتصنيف</button>
+    <button class="tab-btn" onclick="switchTab('setup', this)">إعداد الحملة</button>
+  </div>
+
+  <!-- تبويب الإرسال السريع -->
+  <section id="view-send" class="view active">
+    <div id="sendHeroBox" class="send-hero">
+      <div style="color:var(--muted); font-size:0.86rem;">لا توجد أرقام في قائمة الانتظار.<br>انتقل إلى «إعداد الحملة» لإضافة الأرقام والرسائل.</div>
+    </div>
+  </section>
+
+  <!-- تبويب الزبائن والتصنيف -->
+  <section id="view-leads" class="view">
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="setFilter('all', this)">الكل</button>
+      <button class="filter-chip" onclick="setFilter('pending', this)">قيد الانتظار</button>
+      <button class="filter-chip" onclick="setFilter('sent', this)">تم الإرسال</button>
+      <button class="filter-chip" onclick="setFilter('interested', this)">مهتم</button>
+      <button class="filter-chip" onclick="setFilter('followup', this)">لازم تحكي معه</button>
+      <button class="filter-chip" onclick="setFilter('not', this)">غير مهتم</button>
+    </div>
+    <div id="leadsListContainer"></div>
+  </section>
+
+  <!-- تبويب إعداد الحملة -->
+  <section id="view-setup" class="view">
+    <div class="card">
+      <h2>1. قائمة الأرقام والأسماء</h2>
+      <label>ضع كل رقم بسطر (يمكنك كتابة: الاسم، الرقم أو الرقم فقط)</label>
+      <textarea id="rawContacts" rows="5" placeholder="أحمد، 0991234567&#10;سامر، 0987654321&#10;0933112233"></textarea>
+      <label>الحد الأقصى للإرسال اليومي (لتجنب الحظر)</label>
+      <input type="number" id="dailyLimitInput" value="50" min="1" max="500">
+      <button class="btn" onclick="importContacts()">+ إضافة الأرقام لقائمة الحملة</button>
+    </div>
+
+    <div class="card">
+      <h2>2. نسخ الرسالة الـ 3 (لتجنب السبام)</h2>
+      <label>اكتب {الاسم} ليتم استبداله باسم الزبون تلقائياً</label>
+      <label style="color:var(--gold);">النسخة الأولى (A)</label>
+      <textarea id="msgA" rows="2" placeholder="مرحباً {الاسم}، عندنا عرض خاص اليوم..."></textarea>
+      <label style="color:var(--gold);">النسخة الثانية (B) - اختياري</label>
+      <textarea id="msgB" rows="2" placeholder="أهلاً {الاسم}، حابين نخبرك عن جديدنا..."></textarea>
+      <label style="color:var(--gold);">النسخة الثالثة (C) - اختياري</label>
+      <textarea id="msgC" rows="2" placeholder="يسعد أوقاتك {الاسم}، شوف عرضنا الجديد..."></textarea>
+      <button class="btn" onclick="saveMessages()">حفظ نسخ الرسائل</button>
+    </div>
+  </section>
+    <script>
+    const STORAGE_KEY = "wa_campaign_free_v1";
+    let state = {
+      contacts: [],
+      messages: ["مرحباً {الاسم}، يسعد أوقاتك!", "", ""],
+      dailyLimit: 50,
+      sentToday: 0,
+      lastSendDate: new Date().toDateString(),
+      varIndex: 0
+    };
+    let currentFilter = "all";
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        if (saved) state = { ...state, ...saved };
+      } catch (e) {}
+      const today = new Date().toDateString();
+      if (state.lastSendDate !== today) {
+        state.sentToday = 0;
+        state.lastSendDate = today;
+        saveState();
+      }
+      document.getElementById("msgA").value = state.messages[0] || "";
+      document.getElementById("msgB").value = state.messages[1] || "";
+      document.getElementById("msgC").value = state.messages[2] || "";
+      document.getElementById("dailyLimitInput").value = state.dailyLimit || 50;
+      renderAll();
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+    }
+
+    function switchTab(tab, btn) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      document.getElementById("view-" + tab).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function cleanPhone(raw) {
+      let p = raw.replace(/[^\d+]/g, "").replace(/^\+/, "");
+      if (p.startsWith("00")) p = p.slice(2);
+      if (p.startsWith("09") && p.length === 10) p = "963" + p.slice(1);
+      return p;
+    }
+
+    function importContacts() {
+      const lines = document.getElementById("rawContacts").value.split(/\n/).map(l => l.trim()).filter(Boolean);
+      const limit = parseInt(document.getElementById("dailyLimitInput").value, 10) || 50;
+      state.dailyLimit = limit;
+      let added = 0;
+
+      lines.forEach(line => {
+        const parts = line.split(/[,،-]/).map(s => s.trim());
+        let name = "عميلنا العزيز", phoneRaw = line;
+        if (parts.length >= 2) {
+          if (/\d{7,}/.test(parts[1])) { name = parts[0] || name; phoneRaw = parts[1]; }
+          else { name = parts[1] || name; phoneRaw = parts[0]; }
+        }
+        const phone = cleanPhone(phoneRaw);
+        if (phone.length >= 9 && !state.contacts.some(c => c.phone === phone)) {
+          state.contacts.push({ id: Date.now() + Math.random(), name, phone, status: "pending" });
+          added++;
+        }
+      });
+
+      document.getElementById("rawContacts").value = "";
+      saveState();
+      alert(`تمت إضافة ${added} رقم جديد بنجاح!`);
+    }
+
+    function saveMessages() {
+      state.messages = [
+        document.getElementById("msgA").value.trim(),
+        document.getElementById("msgB").value.trim(),
+        document.getElementById("msgC").value.trim()
+      ];
+      state.dailyLimit = parseInt(document.getElementById("dailyLimitInput").value, 10) || 50;
+      saveState();
+      alert("تم حفظ نسخ الرسائل بنجاح!");
+    }
+
+    function getActiveMessages() {
+      const valid = state.messages.map((m, i) => ({ label: ["A", "B", "C"][i], text: m })).filter(x => x.text);
+      return valid.length ? valid : [{ label: "A", text: "مرحباً {الاسم}" }];
+    }
+
+    function renderAll() {
+      document.getElementById("stTotal").innerText = state.contacts.length;
+      document.getElementById("stToday").innerText = `${state.sentToday}/${state.dailyLimit}`;
+      document.getElementById("stInterested").innerText = state.contacts.filter(c => c.status === "interested").length;
+      document.getElementById("stFollowup").innerText = state.contacts.filter(c => c.status === "followup").length;
+      renderSendHero();
+      renderLeads();
+    }
+
+    function renderSendHero() {
+      const box = document.getElementById("sendHeroBox");
+      const next = state.contacts.find(c => c.status === "pending");
+      if (!next) {
+        box.innerHTML = `<div style="color:var(--muted); font-size:0.88rem; padding:12px 0;">انتهت قائمة الانتظار!<br>أضف أرقاماً جديدة من تبويب «إعداد الحملة».</div>`;
+        return;
+      }
+      if (state.sentToday >= state.dailyLimit) {
+        box.innerHTML = `<div style="color:var(--gold); font-weight:800; font-size:0.9rem; padding:10px 0;">وصلت للحد اليومي الآمن (${state.dailyLimit} رسالة).<br>استكمل الإرسال غداً أو ارفع الحد من الإعدادات.</div>`;
+        return;
+      }
+
+      const msgs = getActiveMessages();
+      const chosen = msgs[state.varIndex % msgs.length];
+      const finalMsg = chosen.text.replace(/\{الاسم\}/g, next.name);
+      const remaining = state.contacts.filter(c => c.status === "pending").length;
+
+      box.innerHTML = `
+        <span class="badge-var">نسخة الرسالة: ${chosen.label} • متبقي ${remaining} رقم</span>
+        <div class="hero-name">${next.name}</div>
+        <div class="hero-phone">+${next.phone}</div>
+        <div class="hero-msg-preview">${finalMsg}</div>
+        <button class="btn" onclick="sendNow(${next.id})">إرسال عبر واتساب والانتقال للتالي</button>
+        <button class="btn btn-secondary" onclick="skipContact(${next.id})">تخطي هذا الرقم</button>
+      `;
+    }
+
+    function sendNow(id) {
+      const c = state.contacts.find(x => x.id === id);
+      if (!c) return;
+      const msgs = getActiveMessages();
+      const chosen = msgs[state.varIndex % msgs.length];
+      const finalMsg = chosen.text.replace(/\{الاسم\}/g, c.name);
+
+      window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(finalMsg)}`, "_blank");
+      c.status = "sent";
+      state.sentToday++;
+      state.varIndex++;
+      saveState();
+    }
+
+    function skipContact(id) {
+      const c = state.contacts.find(x => x.id === id);
+      if (c) { c.status = "not"; saveState(); }
+    }
+
+    function setFilter(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderLeads();
+    }
+
+    function setLeadStatus(id, st) {
+      const c = state.contacts.find(x => x.id === id);
+      if (c) { c.status = st; saveState(); }
+    }
+
+    function renderLeads() {
+      const box = document.getElementById("leadsListContainer");
+      const list = currentFilter === "all" ? state.contacts : state.contacts.filter(c => c.status === currentFilter);
+      if (!list.length) {
+        box.innerHTML = `<div style="text-align:center; color:var(--muted); padding:24px; font-size:0.84rem;">لا توجد نتائج في هذا التصنيف.</div>`;
+        return;
+      }
+      box.innerHTML = list.map(c => `
+        <div class="lead-row">
+          <div class="lead-top">
+            <div>
+              <div class="lead-name">${c.name}</div>
+              <div class="lead-phone">+${c.phone}</div>
+            </div>
+            <a href="https://wa.me/${c.phone}" target="_blank" style="color:var(--green); font-size:0.76rem; font-weight:800; text-decoration:none;">فتح المحادثة ↗</a>
+          </div>
+          <div class="status-btns">
+            <button class="st-btn ${c.status === 'sent' ? 'active-sent' : ''}" onclick="setLeadStatus(${c.id}, 'sent')">تم الإرسال</button>
+            <button class="st-btn ${c.status === 'interested' ? 'active-interested' : ''}" onclick="setLeadStatus(${c.id}, 'interested')">مهتم</button>
+            <button class="st-btn ${c.status === 'followup' ? 'active-followup' : ''}" onclick="setLeadStatus(${c.id}, 'followup')">للمتابعة</button>
+            <button class="st-btn ${c.status === 'not' ? 'active-not' : ''}" onclick="setLeadStatus(${c.id}, 'not')">غير مهتم</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function resetCampaign() {
+      if (!confirm("هل تريد مسح الأرقام الحالية والبدء بحملة جديدة؟ (ستبقى نسخ الرسائل محفوظة)")) return;
+      state.contacts = [];
+      saveState();
+    }
+
+    loadState();
+  </script>
+</body>
+</html>
